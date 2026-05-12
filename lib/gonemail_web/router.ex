@@ -5,13 +5,9 @@ defmodule GonemailWeb.Router do
     plug :accepts, ["json"]
   end
 
-  pipeline :auth do
-    plug GonemailWeb.AuthPlug
-  end
-
   scope "/api", GonemailWeb do
-    pipe_through [:api, :auth]
-    post "/send", GonemailWeb.EmailController, :send
+    pipe_through [:api]
+    post "/send", EmailController, :send
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
