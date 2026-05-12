@@ -14,6 +14,7 @@ defmodule Gonemail.Application do
       {Phoenix.PubSub, name: Gonemail.PubSub},
       # Start a worker by calling: Gonemail.Worker.start_link(arg)
       # {Gonemail.Worker, arg},
+      Gonemail.Scheduler,
       # Start to serve requests, typically the last entry
       GonemailWeb.Endpoint
     ]
