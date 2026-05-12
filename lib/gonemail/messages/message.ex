@@ -28,7 +28,7 @@ defmodule Gonemail.Messages.Message do
     timestamps()
   end
 
-  @required [:app, :to_email, :from_email, :subject, :body, :status]
+  @required [:app_id, :to_email, :from_email, :subject, :body, :status]
   @optional [:from_name, :data, :template_id, :last_error, :sent_at, :next_attempt_at]
   @statuses [:queued, :retrying, :delivered, :failed]
 

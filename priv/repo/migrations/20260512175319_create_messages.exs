@@ -3,7 +3,7 @@ defmodule Gonemail.Repo.Migrations.CreateMessages do
 
   def change do
     create table(:messages) do
-      add :app, references(:apps, on_delete: :nothing, column: :name, type: :string), null: false
+      add :app_id, references(:apps, on_delete: :nothing, column: :name, type: :string), null: false
       add :to_email, :string, null: false
       add :from_name, :string
       add :from_email, :string, null: false
@@ -20,6 +20,6 @@ defmodule Gonemail.Repo.Migrations.CreateMessages do
     end
 
     create index(:messages, [:status, :next_attempt_at, :inserted_at])
-    create index(:messages, [:app, :status])
+    create index(:messages, [:app_id, :status])
   end
 end

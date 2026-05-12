@@ -17,7 +17,7 @@ defmodule Gonemail.Apps.App do
       references: :name,
       type: :string
 
-    has_many :messages, Gonemail.Messages.Message, foreign_key: :app
+    has_many :messages, Gonemail.Messages.Message, foreign_key: :app_id
 
     timestamps()
   end

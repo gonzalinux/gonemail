@@ -1,5 +1,4 @@
 defmodule Gonemail.Apps.AppService do
-  import Ecto.Query
   alias Gonemail.Repo
   alias Gonemail.Apps.App
 
