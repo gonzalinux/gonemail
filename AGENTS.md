@@ -1,3 +1,19 @@
+## Project: Gonemail
+
+Gonemail is a self-hosted transactional email microservice. Internal services send HTTP
+requests to deliver emails via SMTP. There is no authentication — the service is
+internal-network only.
+
+Key things to know before making changes:
+- The queue is DB-backed — `messages` table with `FOR UPDATE SKIP LOCKED`, no in-memory state
+- Templates use `{{ path.to.var }}` syntax preprocessed before EEx, not raw EEx in templates
+- `apps` and `templates` have string PKs (`name`), not bigserial — account for this in queries and associations
+- `app` in `messages` is a string FK to `apps.name`, not an integer
+- There are two changesets in `Message`: `changeset/2` for creation, `delivery_changeset/2` for worker updates
+- Run `mix precommit` before finishing any task
+
+---
+
 This is a web application written using the Phoenix web framework.
 
 ## Project guidelines
