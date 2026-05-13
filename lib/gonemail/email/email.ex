@@ -9,16 +9,20 @@ defmodule Gonemail.Email.Email do
     - subject: Email subject line
     - template: Template module (e.g., Seveneat.Emails.Templates.Welcome)
     - assigns: Map of variables to pass to the template
-    - opts: Options including :from_email (defaults to "noreply@seveneat.com")
+    - opts: Options including :from_email and :from_name
 
   ## Returns
     - A Swoosh.Email struct ready to be delivered
   """
-  def build(to, subject, template, assigns \\ %{}, opts \\ []) do
+  def build(
+        to,
+        subject,
+        template,
+        %{from_email: from_email, from_name: from_name},
+        assigns \\ %{}
+      ) do
     html = render_template(template, assigns)
     text = extract_text_from_html(html)
-    from_email = Keyword.get(opts, :from_email, "noreply@seveneat.com")
-    from_name = Keyword.get(opts, :from_name, from_email)
 
     new()
     |> to(to)

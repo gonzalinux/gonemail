@@ -11,7 +11,7 @@ defmodule Gonemail.Apps.AppServiceTest do
       assert {:ok, app} = AppService.create_app(@valid_attrs)
       assert app.name == "seveneat"
       assert app.domain == "seveneat.com"
-      assert app.status == "pending"
+      assert app.status == :pending
     end
 
     test "returns error with missing required fields" do

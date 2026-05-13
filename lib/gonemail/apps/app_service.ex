@@ -1,10 +1,17 @@
 defmodule Gonemail.Apps.AppService do
+  import Ecto.Query
   alias Gonemail.Repo
   alias Gonemail.Apps.App
 
   def get_app(id) do
     App
     |> Repo.get(id)
+  end
+
+  def get_verified_app(id) do
+    App
+    |> where([a], a.id == ^id and a.status == :verified)
+    |> Repo.one()
   end
 
   def create_app(attrs) do

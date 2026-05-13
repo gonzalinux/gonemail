@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :gonemail, Gonemail.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "password",
   hostname: "localhost",
   database: "gonemail_dev",
   stacktrace: true,

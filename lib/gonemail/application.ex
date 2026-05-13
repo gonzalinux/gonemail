@@ -15,6 +15,7 @@ defmodule Gonemail.Application do
       # Start a worker by calling: Gonemail.Worker.start_link(arg)
       # {Gonemail.Worker, arg},
       Gonemail.Scheduler,
+      {Gonemail.Email.Workers.EmailPool, []},
       # Start to serve requests, typically the last entry
       GonemailWeb.Endpoint
     ]

@@ -9,7 +9,7 @@ defmodule Gonemail.Messages.Message do
     field :subject, :string
     field :body, :string
     field :data, :map
-    field :status, :string
+    field :status, Ecto.Enum, values: [:queued, :retrying, :delivered, :failed]
     field :attempts, :integer, default: 0
     field :last_error, :string
     field :sent_at, :utc_datetime
@@ -30,7 +30,6 @@ defmodule Gonemail.Messages.Message do
 
   @required [:app_id, :to_email, :from_email, :subject, :body, :status]
   @optional [:from_name, :data, :template_id, :last_error, :sent_at, :next_attempt_at]
-  @statuses [:queued, :retrying, :delivered, :failed]
 
   def changeset(message, attrs) do
     message
@@ -38,7 +37,6 @@ defmodule Gonemail.Messages.Message do
     |> validate_required(@required)
     |> validate_format(:to_email, ~r/@/)
     |> validate_format(:from_email, ~r/@/)
-    |> validate_inclusion(:status, @statuses)
     |> assoc_constraint(:app)
     |> assoc_constraint(:template)
   end
@@ -47,6 +45,5 @@ defmodule Gonemail.Messages.Message do
     message
     |> cast(attrs, [:status, :attempts, :last_error, :sent_at, :next_attempt_at])
     |> validate_required([:status, :attempts])
-    |> validate_inclusion(:status, @statuses)
   end
 end

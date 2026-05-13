@@ -7,7 +7,7 @@ defmodule Gonemail.Apps.App do
 
   schema "apps" do
     field :domain, :string
-    field :status, :string
+    field :status, Ecto.Enum, values: [:pending, :active, :inactive]
     field :verify_date, :utc_datetime
     field :default_sender_email, :string
     field :default_sender_name, :string
@@ -24,13 +24,11 @@ defmodule Gonemail.Apps.App do
 
   @required [:name, :domain, :status]
   @optional [:verify_date, :default_sender_email, :default_sender_name, :default_template_id]
-  @statuses [:pending, :active, :inactive]
 
   def changeset(app, attrs) do
     app
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required)
-    |> validate_inclusion(:status, @statuses)
     |> unique_constraint(:name, name: :apps_pkey)
   end
 
@@ -38,6 +36,5 @@ defmodule Gonemail.Apps.App do
     app
     |> cast(attrs, [:status, :verify_date])
     |> validate_required([:status, :verify_date])
-    |> validate_inclusion(:status, @statuses)
   end
 end
