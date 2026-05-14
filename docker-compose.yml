@@ -1,0 +1,49 @@
+name: gonemail
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - MIX_ENV=${MIX_ENV:-prod}
+    ports:
+      - "${PORT:-7777}:${PORT:-7777}"
+    env_file:
+      - .env
+    environment:
+      - JSON_LOG_PATH=/app/logs/app.json.log
+      - PHX_SERVER=true
+    volumes:
+      - logs:/app/logs
+    restart: unless-stopped
+    stop_grace_period: 60s
+    healthcheck:
+      test:
+        ["CMD-SHELL", "wget -q -O /dev/null http://localhost:${PORT:-7777}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    extra_hosts:
+      - database:host-gateway
+
+  alloy:
+    image: grafana/alloy:v1.15.0
+    restart: unless-stopped
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro,z
+      - logs:/app/logs:ro
+    command: run /etc/alloy/config.alloy
+    environment:
+      - LOG_AGGREGATOR_URL=${LOG_AGGREGATOR_URL}
+      - DEPLOY_ENV=${DEPLOY_ENV}
+
+volumes:
+  logs:
+    driver: local

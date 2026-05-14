@@ -36,6 +36,13 @@ defmodule Gonemail.Messages.MessageService do
     |> Repo.one()
   end
 
+  def get_message(id) do
+    case Repo.get(Message, id) do
+      nil -> {:error, :not_found}
+      message -> {:ok, message}
+    end
+  end
+
   def create(attrs) do
     %Message{}
     |> Message.changeset(attrs)

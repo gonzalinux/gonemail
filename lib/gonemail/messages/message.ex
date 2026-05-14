@@ -2,6 +2,25 @@ defmodule Gonemail.Messages.Message do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :app_id,
+             :template_id,
+             :to_email,
+             :to_name,
+             :from_email,
+             :from_name,
+             :subject,
+             :status,
+             :attempts,
+             :last_error,
+             :sent_at,
+             :next_attempt_at,
+             :inserted_at,
+             :updated_at
+           ]}
+
   schema "messages" do
     field :to_email, :string
     field :to_name, :string

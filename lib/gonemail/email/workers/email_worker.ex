@@ -28,7 +28,12 @@ defmodule Gonemail.Email.Workers.EmailWorker do
             :empty
 
           message ->
-            result = deliver(message)
+            result =
+              case deliver(message) do
+                {:ok, _} -> :ok
+                {:error, reason} -> {:error, reason}
+              end
+
             MessageService.mark_attempt(message, result)
             :processed
         end

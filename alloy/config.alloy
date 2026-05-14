@@ -1,0 +1,61 @@
+local.file_match "app" {
+  // Match base file and OTP-rotated files (.0, .1, .2)
+  path_targets = [{"__path__" = "/app/logs/app.json.log*"}]}
+
+loki.source.file "app" {
+  targets    = local.file_match.app.targets
+  forward_to = [loki.process.app.receiver]
+}
+
+loki.process "app" {
+  stage.json {
+    expressions = {
+      level      = "level",
+      node       = "node",
+      timestamp  = "timestamp",
+      message    = "message",
+      request_id = "request_id",
+      line       = "line",
+      pid        = "pid",
+    }
+  }
+
+  stage.labels {
+    values = {
+      level = null,
+      node  = null,
+    }
+  }
+
+  stage.static_labels {
+    values = {
+      app    = "gonemail",
+      deploy = coalesce(env("DEPLOY_ENV"), "local"),
+    }
+  }
+
+  stage.structured_metadata {
+    values = {
+      request_id = "",
+      line       = "",
+      pid        = "",
+    }
+  }
+
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339"
+  }
+
+  stage.output {
+    source = "message"
+  }
+
+  forward_to = [loki.write.aggregator.receiver]
+}
+
+loki.write "aggregator" {
+  endpoint {
+    url = coalesce(env("LOG_AGGREGATOR_URL"), "")
+  }
+}

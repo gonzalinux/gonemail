@@ -20,6 +20,10 @@ if System.get_env("PHX_SERVER") do
   config :gonemail, GonemailWeb.Endpoint, server: true
 end
 
+if path = System.get_env("JSON_LOG_PATH") do
+  config :gonemail, :json_logging, enabled: true, path: path
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -51,7 +55,7 @@ if config_env() == :prod do
       """
 
   host = System.get_env("PHX_HOST") || "example.com"
-  port = String.to_integer(System.get_env("PORT") || "4000")
+  port = String.to_integer(System.get_env("PORT") || "7777")
 
   config :gonemail, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
@@ -66,6 +70,30 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base
+
+  smtp_username = System.get_env("SMTP_USERNAME")
+  smtp_password = System.get_env("SMTP_PASSWORD")
+  smtp_relay = System.get_env("SMTP_RELAY") || "smtp.email.uk-london-1.oci.oraclecloud.com"
+
+  if smtp_username && smtp_password do
+    config :gonemail, Gonemail.Mailer,
+      adapter: Swoosh.Adapters.SMTP,
+      relay: smtp_relay,
+      port: 587,
+      username: smtp_username,
+      password: smtp_password,
+      tls: :always,
+      ssl: false,
+      auth: :always,
+      retries: 2,
+      tls_options: [
+        versions: [:"tlsv1.2"],
+        verify: :verify_none
+      ]
+  else
+    # Fallback to local adapter for development/testing when SMTP is not configured
+    config :gonemail, Gonemail.Mailer, adapter: Swoosh.Adapters.Local
+  end
 
   # ## SSL Support
   #

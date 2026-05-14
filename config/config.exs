@@ -36,6 +36,9 @@ config :logger, :default_formatter,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+# JSON structured logging for Grafana Alloy (disabled by default, enable via JSON_LOG_PATH)
+config :gonemail, :json_logging, enabled: false, path: "/app/logs/app.json.log"
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 

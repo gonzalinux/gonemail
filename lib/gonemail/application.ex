@@ -7,6 +7,11 @@ defmodule Gonemail.Application do
 
   @impl true
   def start(_type, _args) do
+    case Application.get_env(:gonemail, :json_logging) do
+      [enabled: true, path: path] -> Gonemail.JsonLogHandler.attach(path)
+      _ -> :ok
+    end
+
     children = [
       GonemailWeb.Telemetry,
       Gonemail.Repo,
@@ -14,7 +19,6 @@ defmodule Gonemail.Application do
       {Phoenix.PubSub, name: Gonemail.PubSub},
       # Start a worker by calling: Gonemail.Worker.start_link(arg)
       # {Gonemail.Worker, arg},
-      Gonemail.Scheduler,
       {Gonemail.Email.Workers.EmailPool, []},
       # Start to serve requests, typically the last entry
       GonemailWeb.Endpoint

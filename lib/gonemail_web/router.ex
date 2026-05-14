@@ -5,9 +5,19 @@ defmodule GonemailWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/", GonemailWeb do
+    get "/health", HealthController, :check
+  end
+
   scope "/api", GonemailWeb do
     pipe_through [:api]
+
     post "/send", EmailController, :send
+    get "/messages/:id", MessageController, :show
+
+    resources "/apps", AppController, except: [:new, :edit] do
+      resources "/templates", TemplateController, except: [:new, :edit]
+    end
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

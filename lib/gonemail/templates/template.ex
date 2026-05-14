@@ -4,6 +4,7 @@ defmodule Gonemail.Templates.Template do
 
   @primary_key {:name, :string, autogenerate: false}
   @foreign_key_type :string
+  @derive {Jason.Encoder, only: [:name, :subject, :html_body, :app_id, :inserted_at, :updated_at]}
 
   schema "templates" do
     field :subject, :string
