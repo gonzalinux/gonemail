@@ -4,10 +4,11 @@ defmodule Gonemail.Messages.Message do
 
   schema "messages" do
     field :to_email, :string
+    field :to_name, :string
     field :from_name, :string
     field :from_email, :string
     field :subject, :string
-    field :body, :string
+    field :html_body, :string
     field :data, :map
     field :status, Ecto.Enum, values: [:queued, :retrying, :delivered, :failed]
     field :attempts, :integer, default: 0
@@ -28,8 +29,8 @@ defmodule Gonemail.Messages.Message do
     timestamps()
   end
 
-  @required [:app_id, :to_email, :from_email, :subject, :body, :status]
-  @optional [:from_name, :data, :template_id, :last_error, :sent_at, :next_attempt_at]
+  @required [:app_id, :to_email, :from_email, :subject, :html_body, :status]
+  @optional [:to_name, :from_name, :data, :template_id, :last_error, :sent_at, :next_attempt_at]
 
   def changeset(message, attrs) do
     message

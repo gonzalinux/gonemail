@@ -1,9 +1,10 @@
 defmodule Gonemail.Email.Workers.EmailWorker do
   use GenServer
-  require Logger
+  alias Gonemail.Mailer
 
+  alias Gonemail.Messages.Message
+  alias Gonemail.Email
   alias Gonemail.Messages.MessageService
-  alias Gonemail.Email.EmailService
   alias Gonemail.Repo
 
   @idle_interval 1_000
@@ -27,7 +28,7 @@ defmodule Gonemail.Email.Workers.EmailWorker do
             :empty
 
           message ->
-            result = EmailService.deliver(message)
+            result = deliver(message)
             MessageService.mark_attempt(message, result)
             :processed
         end
@@ -39,5 +40,19 @@ defmodule Gonemail.Email.Workers.EmailWorker do
     end
 
     {:noreply, state}
+  end
+
+  defp deliver(%Message{
+         to_email: to_email,
+         to_name: to_name,
+         from_email: from_email,
+         from_name: from_name,
+         subject: subject,
+         html_body: html_body
+       }) do
+    to = if to_name, do: {to_name, to_email}, else: to_email
+
+    Email.build(to, subject, html_body, %{from_email: from_email, from_name: from_name})
+    |> Mailer.deliver()
   end
 end

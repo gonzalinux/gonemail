@@ -17,6 +17,7 @@ defmodule Gonemail.Apps.App do
       references: :name,
       type: :string
 
+    has_many :templates, Gonemail.Templates.Template, foreign_key: :app_id
     has_many :messages, Gonemail.Messages.Message, foreign_key: :app_id
 
     timestamps()

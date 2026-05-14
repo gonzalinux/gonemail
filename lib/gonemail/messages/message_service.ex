@@ -5,14 +5,20 @@ defmodule Gonemail.Messages.MessageService do
 
   def count_pending() do
     now = DateTime.utc_now()
-    from(m in Message, where: m.status == :queued or (m.status == :retryable and m.next_attempt_at < ^now))
+
+    from(m in Message,
+      where: m.status == :queued or (m.status == :retryable and m.next_attempt_at < ^now)
+    )
     |> select([m], count(m.id))
     |> Repo.one()
   end
 
   def get_next() do
     now = DateTime.utc_now()
-    from(m in Message, where: m.status == :queued or (m.status == :retryable and m.next_attempt_at < ^now))
+
+    from(m in Message,
+      where: m.status == :queued or (m.status == :retryable and m.next_attempt_at < ^now)
+    )
     |> order_by([m], asc: m.id)
     |> limit(1)
     |> Repo.one()
@@ -28,6 +34,12 @@ defmodule Gonemail.Messages.MessageService do
       lock: "FOR UPDATE SKIP LOCKED"
     )
     |> Repo.one()
+  end
+
+  def create(attrs) do
+    %Message{}
+    |> Message.changeset(attrs)
+    |> Repo.insert()
   end
 
   @retry_delays [5, 30, 120]
@@ -68,5 +80,4 @@ defmodule Gonemail.Messages.MessageService do
       |> Repo.update!()
     end
   end
-
 end

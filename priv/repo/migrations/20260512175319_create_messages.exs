@@ -3,8 +3,11 @@ defmodule Gonemail.Repo.Migrations.CreateMessages do
 
   def change do
     create table(:messages) do
-      add :app_id, references(:apps, on_delete: :nothing, column: :name, type: :string), null: false
+      add :app_id, references(:apps, on_delete: :nothing, column: :name, type: :string),
+        null: false
+
       add :to_email, :string, null: false
+      add :to_name, :string
       add :from_name, :string
       add :from_email, :string, null: false
       add :subject, :text, null: false

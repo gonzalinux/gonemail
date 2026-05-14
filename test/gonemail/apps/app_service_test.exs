@@ -16,6 +16,7 @@ defmodule Gonemail.Apps.AppServiceTest do
 
     test "returns error with missing required fields" do
       assert {:error, changeset} = AppService.create_app(@invalid_attrs)
+
       assert %{name: ["can't be blank"], domain: ["can't be blank"], status: ["can't be blank"]} =
                errors_on(changeset)
     end

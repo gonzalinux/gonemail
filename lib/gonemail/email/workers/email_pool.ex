@@ -4,7 +4,13 @@ defmodule Gonemail.Email.Workers.EmailPool do
   @default_pool_size 5
 
   def start_link(opts) do
-    pool_size = Keyword.get(opts, :pool_size, Application.get_env(:gonemail, :email_pool_size, @default_pool_size))
+    pool_size =
+      Keyword.get(
+        opts,
+        :pool_size,
+        Application.get_env(:gonemail, :email_pool_size, @default_pool_size)
+      )
+
     Supervisor.start_link(__MODULE__, pool_size, name: __MODULE__)
   end
 
