@@ -23,8 +23,9 @@ RUN if [ "$MIX_ENV" = "prod" ]; then \
 COPY config config
 COPY lib lib
 COPY priv priv
+COPY assets assets
 
-RUN mix compile && mix release
+RUN mix assets.deploy && mix compile && mix release
 
 FROM alpine:3.20.3
 
