@@ -26,3 +26,6 @@ erl_crash.dump
 gonemail-*.tar
 
 .env
+
+# Auto-generated static assets (compiled by esbuild/tailwind at build time).
+/priv/static/assets/

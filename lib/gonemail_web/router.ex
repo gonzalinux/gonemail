@@ -1,5 +1,15 @@
 defmodule GonemailWeb.Router do
   use GonemailWeb, :router
+  import Phoenix.LiveView.Router
+
+  pipeline :browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, html: {GonemailWeb.Layouts, :root}
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+  end
 
   pipeline :api do
     plug :accepts, ["json"]
@@ -9,7 +19,16 @@ defmodule GonemailWeb.Router do
     get "/health", HealthController, :check
   end
 
-  scope "/api", GonemailWeb do
+  scope "/admin", GonemailWeb do
+    pipe_through :browser
+    live "/", Live.AdminLive
+    live "/apps", Live.AppsLive
+    live "/apps/:name/templates", Live.TemplatesLive
+    live "/messages", Live.MessagesLive
+    live "/send", Live.SendLive
+  end
+
+  scope "/api/v1", GonemailWeb do
     pipe_through [:api]
 
     post "/send", EmailController, :send

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content={get_csrf_token()} />
+    <title>Gonemail Admin</title>
+    <link rel="stylesheet" href={~p"/assets/app.css"} />
+    <script defer src={~p"/assets/app.js"}></script>
+  </head>
+  <body class="bg-gray-50 text-gray-900 min-h-screen">
+    <nav class="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-6">
+      <a href={~p"/admin"} class="font-semibold text-gray-800 mr-4 hover:text-gray-600">Gonemail</a>
+      <a href={~p"/admin/apps"} class="text-sm text-gray-600 hover:text-gray-900">Apps</a>
+      <a href={~p"/admin/messages"} class="text-sm text-gray-600 hover:text-gray-900">Messages</a>
+      <a href={~p"/admin/send"} class="text-sm text-gray-600 hover:text-gray-900">Send Test</a>
+    </nav>
+    <main class="p-6">
+      <%= @inner_content %>
+    </main>
+  </body>
+</html>

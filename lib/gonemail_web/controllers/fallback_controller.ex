@@ -1,6 +1,12 @@
 defmodule GonemailWeb.FallbackController do
   use GonemailWeb, :controller
 
+  def call(conn, {:error, :invalid_sender_domain}) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> json(%{error: "from email domain must match the app's registered domain"})
+  end
+
   def call(conn, {:error, :not_found}) do
     conn
     |> put_status(:not_found)

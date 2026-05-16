@@ -39,6 +39,23 @@ config :logger, :default_formatter,
 # JSON structured logging for Grafana Alloy (disabled by default, enable via JSON_LOG_PATH)
 config :gonemail, :json_logging, enabled: false, path: "/app/logs/app.json.log"
 
+config :esbuild,
+  version: "0.17.11",
+  gonemail: [
+    args:
+      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    cd: Path.expand("../assets", __DIR__),
+    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
+
+config :tailwind,
+  version: "3.4.3",
+  gonemail: [
+    args:
+      ~w(--config=tailwind.config.js --input=css/app.css --output=../priv/static/assets/app.css),
+    cd: Path.expand("../assets", __DIR__)
+  ]
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 

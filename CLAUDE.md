@@ -60,8 +60,38 @@ Template syntax: `{{ body.alert.title }}`, `{{ data.username }}` — safe, missi
 - Retry schedule: 5s, 30s, 120s (max 3 attempts), then `status = "failed"`
 - On startup: re-enqueue anything stuck in `queued` or `retrying`
 
+## Domain verification
+
+Apps must have `status: :active` before `enqueue_email` will accept requests from them.
+The current flow is **manual**:
+
+1. Register the app via `POST /api/apps`
+2. Set up the domain in Oracle Cloud Email Delivery console (SPF + DKIM DNS records)
+3. Once OCI confirms the domain, activate the app:
+   ```
+   PUT /api/apps/:name
+   { "status": "active", "verify_date": "2026-05-15T00:00:00Z" }
+   ```
+
+The `App` schema already has `verify_changeset/2` for this purpose.
+
+### Future: automated verification
+
+If this becomes a multi-tenant product, replace the manual step with an automated check:
+
+- **DNS-based** — query the domain's TXT records for the expected SPF/DKIM values using
+  `:inet_res` or a DNS library. Can be triggered on demand or via a scheduled job.
+- **OCI API-based** — call the OCI Email Delivery API (`GET /20170907/senders`) to check
+  whether the domain/sender is verified on Oracle's side. Requires OCI SDK credentials
+  (`OCI_TENANCY`, `OCI_USER`, `OCI_KEY_FILE`, `OCI_FINGERPRINT`).
+
+In either case, a `POST /api/apps/:name/verify` action should trigger the check and call
+`AppService.update_app(name, %{status: :active, verify_date: DateTime.utc_now()})` on
+success, or return the specific DNS/API failure reason so the caller knows what to fix.
+
 ## Mix aliases
 
 - `mix setup` — install deps + create + migrate + seed
 - `mix precommit` — compile (warnings as errors) + unlock unused deps + format + test
 - Always run `mix precommit` before considering a task done
+- Preffer with statements instead of case when they are more readable.

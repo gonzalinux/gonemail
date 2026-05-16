@@ -24,7 +24,10 @@ config :gonemail, GonemailWeb.Endpoint,
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "TGQM/RspfwMaMRkiUAT6o/Ib+yWp0Pk/AiWInLNALneqCDmgHgfm22xqUaD2MWJC",
-  watchers: []
+  watchers: [
+    esbuild: {Esbuild, :install_and_run, [:gonemail, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:gonemail, ~w(--watch)]}
+  ]
 
 # ## SSL Support
 #

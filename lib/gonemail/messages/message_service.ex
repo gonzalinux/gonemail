@@ -7,7 +7,7 @@ defmodule Gonemail.Messages.MessageService do
     now = DateTime.utc_now()
 
     from(m in Message,
-      where: m.status == :queued or (m.status == :retryable and m.next_attempt_at < ^now)
+      where: m.status == :queued or (m.status == :retrying and m.next_attempt_at < ^now)
     )
     |> select([m], count(m.id))
     |> Repo.one()
@@ -17,7 +17,7 @@ defmodule Gonemail.Messages.MessageService do
     now = DateTime.utc_now()
 
     from(m in Message,
-      where: m.status == :queued or (m.status == :retryable and m.next_attempt_at < ^now)
+      where: m.status == :queued or (m.status == :retrying and m.next_attempt_at < ^now)
     )
     |> order_by([m], asc: m.id)
     |> limit(1)
@@ -34,6 +34,16 @@ defmodule Gonemail.Messages.MessageService do
       lock: "FOR UPDATE SKIP LOCKED"
     )
     |> Repo.one()
+  end
+
+  def list_messages(filters \\ []) do
+    app_id = Keyword.get(filters, :app_id)
+    status = Keyword.get(filters, :status)
+
+    from(m in Message, order_by: [desc: m.inserted_at], limit: 50)
+    |> then(fn q -> if app_id, do: where(q, [m], m.app_id == ^app_id), else: q end)
+    |> then(fn q -> if status, do: where(q, [m], m.status == ^status), else: q end)
+    |> Repo.all()
   end
 
   def get_message(id) do

@@ -7,9 +7,10 @@ defmodule Gonemail.Email do
 
   def enqueue_email(to, app_id, template_id, from \\ nil, assigns \\ %{}) do
     with {:ok, app} <- AppService.get_verified_app(app_id),
-         {:ok, template} <- TemplateService.get_template(template_id, app.default_template_id) do
+         {:ok, template} <- TemplateService.get_template(template_id, app.default_template_id),
+         {from_email, from_name} = parse_sender(from, app),
+         :ok <- validate_sender_domain(from_email, app.domain) do
       {to_email, to_name} = parse_recipient(to)
-      {from_email, from_name} = parse_sender(from, app)
       {subject, html_body} = Renderer.render(template, assigns)
 
       MessageService.create(%{
@@ -31,6 +32,19 @@ defmodule Gonemail.Email do
 
   defp parse_sender(nil, app), do: {app.default_sender_email, app.default_sender_name}
   defp parse_sender({name, email}, _app), do: {email, name}
+  defp parse_sender(email, _app) when is_binary(email), do: {email, nil}
+
+  defp validate_sender_domain(from_email, app_domain) do
+    case String.split(from_email, "@") do
+      [_, domain] ->
+        if String.downcase(domain) == String.downcase(app_domain),
+          do: :ok,
+          else: {:error, :invalid_sender_domain}
+
+      _ ->
+        {:error, :invalid_sender_domain}
+    end
+  end
 
   @doc """
   Builds an email with provided body

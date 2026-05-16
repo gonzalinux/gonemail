@@ -40,11 +40,15 @@ defmodule Gonemail.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.8.1"},
+      {:phoenix_live_view, "~> 1.0"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.16"},
+      {:gen_smtp, "~> 1.0"},
       {:req, "~> 0.5"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
@@ -67,7 +71,9 @@ defmodule Gonemail.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"],
+      "assets.build": ["tailwind gonemail", "esbuild gonemail"],
+      "assets.deploy": ["tailwind gonemail --minify", "esbuild gonemail --minify", "phx.digest"]
     ]
   end
 end
