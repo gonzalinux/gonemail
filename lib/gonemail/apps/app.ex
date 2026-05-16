@@ -68,6 +68,7 @@ defmodule Gonemail.Apps.App do
         else
           add_error(changeset, :default_sender_email, "domain must match app domain")
         end
+
       _ ->
         add_error(changeset, :default_sender_email, "is not a valid email address")
     end

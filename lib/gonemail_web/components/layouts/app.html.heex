@@ -1,1 +1,11 @@
+<%= if @flash[:error] do %>
+  <div class="mb-4 mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+    <%= @flash[:error] %>
+  </div>
+<% end %>
+<%= if @flash[:info] do %>
+  <div class="mb-4 mx-6 mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-700 text-sm">
+    <%= @flash[:info] %>
+  </div>
+<% end %>
 <%= @inner_content %>

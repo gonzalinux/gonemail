@@ -6,6 +6,8 @@ defmodule GonemailWeb.Live.MessagesLive do
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket), do: :timer.send_interval(5000, self(), :refresh)
+
     {:ok,
      assign(socket,
        messages: MessageService.list_messages(),
@@ -16,20 +18,27 @@ defmodule GonemailWeb.Live.MessagesLive do
   end
 
   @impl true
-  def handle_event("filter", %{"app_id" => app_id, "status" => status}, socket) do
-    filters =
-      []
-      |> then(fn f -> if app_id != "", do: Keyword.put(f, :app_id, app_id), else: f end)
-      |> then(fn f ->
-        if status != "", do: Keyword.put(f, :status, String.to_atom(status)), else: f
-      end)
+  def handle_info(:refresh, socket) do
+    {:noreply, assign(socket, messages: fetch_messages(socket.assigns))}
+  end
 
+  @impl true
+  def handle_event("filter", %{"app_id" => app_id, "status" => status}, socket) do
     {:noreply,
      assign(socket,
-       messages: MessageService.list_messages(filters),
+       messages: fetch_messages(%{filter_app: app_id, filter_status: status}),
        filter_app: app_id,
        filter_status: status
      )}
+  end
+
+  defp fetch_messages(%{filter_app: app, filter_status: status}) do
+    []
+    |> then(fn f -> if app != "", do: Keyword.put(f, :app_id, app), else: f end)
+    |> then(fn f ->
+      if status != "", do: Keyword.put(f, :status, String.to_existing_atom(status)), else: f
+    end)
+    |> MessageService.list_messages()
   end
 
   @impl true
