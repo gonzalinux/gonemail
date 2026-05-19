@@ -2,10 +2,23 @@ defmodule GoneMailClient do
   @moduledoc """
   HTTP client for the Gonemail transactional email service.
 
-  Drop this file into `lib/` of your project and add `{:req, "~> 0.5"}` to your deps.
+  Drop this file into `lib/` of your project. Requires:
+
+      # mix.exs
+      {:finch, "~> 0.18"},
+      {:jason, "~> 1.4"}
+
+  Start the Finch pool in your application's supervision tree:
+
+      # lib/my_app/application.ex
+      children = [
+        {Finch, name: GoneMailClient.Finch},
+        ...
+      ]
 
   ## Configuration
 
+      # config/config.exs (or runtime.exs)
       config :my_app, GoneMailClient,
         base_url: "http://gonemail.internal",
         app: "my_app"
@@ -38,6 +51,7 @@ defmodule GoneMailClient do
   """
 
   @timeout 10_000
+  @json_headers [{"content-type", "application/json"}, {"accept", "application/json"}]
 
   @doc """
   Enqueues a transactional email.
@@ -63,13 +77,11 @@ defmodule GoneMailClient do
       %{to: encode_contact(to), app: app, template: template, data: data}
       |> maybe_put(:from, from && encode_contact(from))
 
-    case Req.post("#{base_url}/api/v1/send",
-           json: body,
-           receive_timeout: @timeout
-         ) do
-      {:ok, %{status: 202, body: resp}} -> {:ok, resp}
-      {:ok, %{body: resp}} -> {:error, resp}
-      {:error, reason} -> {:error, reason}
+    with {:ok, json} <- Jason.encode(body) do
+      request(:post, "#{base_url}/api/v1/send", json, fn
+        %{status: 202, body: resp} -> {:ok, resp}
+        %{body: resp} -> {:error, resp}
+      end)
     end
   end
 
@@ -82,16 +94,33 @@ defmodule GoneMailClient do
   def get_message(id, opts \\ []) do
     base_url = Keyword.get(opts, :base_url, config(:base_url))
 
-    case Req.get("#{base_url}/api/v1/messages/#{id}", receive_timeout: @timeout) do
-      {:ok, %{status: 200, body: resp}} -> {:ok, resp}
-      {:ok, %{status: 404}} -> {:error, :not_found}
-      {:ok, %{body: resp}} -> {:error, resp}
-      {:error, reason} -> {:error, reason}
-    end
+    request(:get, "#{base_url}/api/v1/messages/#{id}", nil, fn
+      %{status: 200, body: resp} -> {:ok, resp}
+      %{status: 404} -> {:error, :not_found}
+      %{body: resp} -> {:error, resp}
+    end)
   end
 
   @typedoc "An email address or a `{name, email}` tuple."
   @type contact() :: String.t() | {String.t(), String.t()}
+
+  defp request(method, url, body, handler) do
+    finch_body = if body, do: body, else: ""
+
+    Finch.build(method, url, @json_headers, finch_body)
+    |> Finch.request(GoneMailClient.Finch, receive_timeout: @timeout)
+    |> case do
+      {:ok, %Finch.Response{status: status, body: raw}} ->
+        decoded = decode_body(raw)
+        handler.(%{status: status, body: decoded})
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp decode_body(""), do: nil
+  defp decode_body(raw), do: Jason.decode!(raw)
 
   defp encode_contact(email) when is_binary(email), do: email
   defp encode_contact({name, email}), do: %{name: name, email: email}
