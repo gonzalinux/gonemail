@@ -7,6 +7,12 @@ defmodule GonemailWeb.FallbackController do
     |> json(%{error: "from email domain must match the app's registered domain"})
   end
 
+  def call(conn, {:error, :missing_recipient}) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> json(%{error: "missing recipient — add `to=email@example.com` to the webhook URL"})
+  end
+
   def call(conn, {:error, :not_found}) do
     conn
     |> put_status(:not_found)

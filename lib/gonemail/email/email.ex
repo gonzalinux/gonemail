@@ -9,8 +9,8 @@ defmodule Gonemail.Email do
     with {:ok, app} <- AppService.get_verified_app(app_id),
          {:ok, template} <- TemplateService.get_template(template_id, app.default_template_id),
          {from_email, from_name} = parse_sender(from, template, app),
-         :ok <- validate_sender_domain(from_email, app.domain) do
-      {to_email, to_name} = parse_recipient(to)
+         :ok <- validate_sender_domain(from_email, app.domain),
+         {:ok, {to_email, to_name}} <- parse_recipient(to) do
       {subject, html_body} = Renderer.render(template, assigns)
 
       MessageService.create(%{
@@ -27,8 +27,9 @@ defmodule Gonemail.Email do
     end
   end
 
-  defp parse_recipient(email) when is_binary(email), do: {email, nil}
-  defp parse_recipient({name, email}), do: {email, name}
+  defp parse_recipient(nil), do: {:error, :missing_recipient}
+  defp parse_recipient(email) when is_binary(email), do: {:ok, {email, nil}}
+  defp parse_recipient({name, email}), do: {:ok, {email, name}}
 
   defp parse_sender(nil, %{default_sender_email: email} = template, _app) when not is_nil(email),
     do: {email, template.default_sender_name}
