@@ -8,7 +8,7 @@ defmodule GonemailWeb.EmailController do
   def send(conn, params) do
     to = parse_contact(params["to"])
     from = parse_contact(params["from"])
-    assigns = %{"body" => params, "data" => params["data"] || %{}}
+    assigns = Map.merge(%{"body" => params}, params["data"] || %{})
 
     with {:ok, message} <-
            Email.enqueue_email(to, params["app"], params["template"], from, assigns) do
