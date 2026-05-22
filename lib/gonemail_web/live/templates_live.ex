@@ -78,8 +78,8 @@ defmodule GonemailWeb.Live.TemplatesLive do
   def handle_event("render_preview", %{"html_body" => html, "example_data" => json}, socket) do
     assigns =
       case Jason.decode(json) do
-        {:ok, data} when is_map(data) -> %{"data" => data, "body" => data}
-        _ -> %{"data" => %{}, "body" => %{}}
+        {:ok, data} when is_map(data) -> Map.merge(%{"body" => data}, data)
+        _ -> %{"body" => %{}}
       end
 
     rendered =
@@ -312,7 +312,7 @@ defmodule GonemailWeb.Live.TemplatesLive do
           <div id="data-panel" class="hidden bg-white border-b border-gray-200 p-3 space-y-2 shrink-0">
             <p class="text-xs text-gray-400">
               JSON — available as
-              <code class="bg-gray-100 px-1 rounded font-mono text-gray-600">{"{{ data.key }}"}</code>
+              <code class="bg-gray-100 px-1 rounded font-mono text-gray-600">{"{{ key }}"}</code>
               in the template
             </p>
             <textarea

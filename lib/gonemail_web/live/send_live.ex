@@ -35,8 +35,8 @@ defmodule GonemailWeb.Live.SendLive do
 
     assigns =
       case Jason.decode(data_raw) do
-        {:ok, map} -> %{"data" => map}
-        {:error, _} -> %{"data" => %{}}
+        {:ok, map} -> Map.merge(%{"body" => map}, map)
+        {:error, _} -> %{"body" => %{}}
       end
 
     case Email.enqueue_email(to, app_id, template_id, nil, assigns) do

@@ -1,6 +1,8 @@
 defmodule Gonemail.Email do
   import Swoosh.Email
 
+  require Logger
+
   alias Gonemail.Apps.AppService
   alias Gonemail.Templates.{TemplateService, Renderer}
   alias Gonemail.Messages.MessageService
@@ -24,6 +26,13 @@ defmodule Gonemail.Email do
         html_body: html_body,
         status: :queued
       })
+    else
+      {:error, reason} ->
+        Logger.warning(
+          "Failed to enqueue email for app=#{app_id} template=#{template_id}: #{inspect(reason)}"
+        )
+
+        {:error, reason}
     end
   end
 

@@ -5,10 +5,14 @@ defmodule GonemailWeb.EmailController do
 
   alias Gonemail.Email
 
+  require Logger
+
   def send(conn, params) do
     to = parse_contact(params["to"])
     from = parse_contact(params["from"])
     assigns = Map.merge(%{"body" => params}, params["data"] || %{})
+
+    Logger.info("Enqueueing send request for app=#{params["app"]} template=#{params["template"]}")
 
     with {:ok, message} <-
            Email.enqueue_email(to, params["app"], params["template"], from, assigns) do

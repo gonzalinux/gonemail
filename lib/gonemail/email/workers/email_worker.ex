@@ -1,5 +1,6 @@
 defmodule Gonemail.Email.Workers.EmailWorker do
   use GenServer
+  require Logger
   alias Gonemail.Mailer
 
   alias Gonemail.Messages.Message
@@ -28,10 +29,19 @@ defmodule Gonemail.Email.Workers.EmailWorker do
             :empty
 
           message ->
+            Logger.info(
+              "Delivering message #{message.id} to=#{message.to_email} app=#{message.app_id} template=#{message.template_id}"
+            )
+
             result =
               case deliver(message) do
-                {:ok, _} -> :ok
-                {:error, reason} -> {:error, reason}
+                {:ok, _} ->
+                  Logger.info("Delivered message #{message.id}")
+                  :ok
+
+                {:error, reason} ->
+                  Logger.warning("Failed to deliver message #{message.id}: #{inspect(reason)}")
+                  {:error, reason}
               end
 
             MessageService.mark_attempt(message, result)
