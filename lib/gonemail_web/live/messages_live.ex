@@ -13,13 +13,25 @@ defmodule GonemailWeb.Live.MessagesLive do
        messages: MessageService.list_messages(),
        apps: AppService.list_apps(),
        filter_app: "",
-       filter_status: ""
+       filter_status: "",
+       expanded_error_id: nil
      )}
   end
 
   @impl true
   def handle_info(:refresh, socket) do
     {:noreply, assign(socket, messages: fetch_messages(socket.assigns))}
+  end
+
+  @impl true
+  def handle_event("toggle_error", %{"id" => id}, socket) do
+    expanded = if socket.assigns.expanded_error_id == id, do: nil, else: id
+    {:noreply, assign(socket, expanded_error_id: expanded)}
+  end
+
+  @impl true
+  def handle_event("collapse_error", _, socket) do
+    {:noreply, assign(socket, expanded_error_id: nil)}
   end
 
   @impl true
@@ -44,7 +56,7 @@ defmodule GonemailWeb.Live.MessagesLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div>
+    <div phx-click="collapse_error">
       <h1 class="text-2xl font-bold mb-6">Messages</h1>
 
       <form phx-change="filter" class="mb-6 flex gap-3 items-center">
@@ -96,8 +108,21 @@ defmodule GonemailWeb.Live.MessagesLive do
                 <td class="px-4 py-3 text-gray-500 text-xs">
                   <%= if msg.sent_at, do: Calendar.strftime(msg.sent_at, "%Y-%m-%d %H:%M"), else: "—" %>
                 </td>
-                <td class="px-4 py-3 text-red-600 text-xs max-w-xs truncate">
-                  <%= msg.last_error || "" %>
+                <td class="px-4 py-3 text-xs max-w-xs">
+                  <%= if msg.last_error do %>
+                    <span
+                      phx-click.stop="toggle_error"
+                      phx-value-id={msg.id}
+                      class={[
+                        "text-red-600 cursor-pointer block",
+                        (if @expanded_error_id == msg.id,
+                          do: "whitespace-pre-wrap break-words",
+                          else: "truncate")
+                      ]}
+                    >
+                      <%= msg.last_error %>
+                    </span>
+                  <% end %>
                 </td>
               </tr>
             <% end %>
