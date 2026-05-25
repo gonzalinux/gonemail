@@ -13,25 +13,13 @@ defmodule GonemailWeb.Live.MessagesLive do
        messages: MessageService.list_messages(),
        apps: AppService.list_apps(),
        filter_app: "",
-       filter_status: "",
-       expanded_error_id: nil
+       filter_status: ""
      )}
   end
 
   @impl true
   def handle_info(:refresh, socket) do
     {:noreply, assign(socket, messages: fetch_messages(socket.assigns))}
-  end
-
-  @impl true
-  def handle_event("toggle_error", %{"id" => id}, socket) do
-    expanded = if socket.assigns.expanded_error_id == id, do: nil, else: id
-    {:noreply, assign(socket, expanded_error_id: expanded)}
-  end
-
-  @impl true
-  def handle_event("collapse_error", _, socket) do
-    {:noreply, assign(socket, expanded_error_id: nil)}
   end
 
   @impl true
@@ -56,7 +44,7 @@ defmodule GonemailWeb.Live.MessagesLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div phx-click="collapse_error">
+    <div phx-click={JS.add_class("truncate", to: ".error-span") |> JS.remove_class("whitespace-pre-wrap break-words", to: ".error-span")}>
       <h1 class="text-2xl font-bold mb-6">Messages</h1>
 
       <form phx-change="filter" class="mb-6 flex gap-3 items-center">
@@ -111,14 +99,13 @@ defmodule GonemailWeb.Live.MessagesLive do
                 <td class="px-4 py-3 text-xs max-w-xs">
                   <%= if msg.last_error do %>
                     <span
-                      phx-click.stop="toggle_error"
-                      phx-value-id={msg.id}
-                      class={[
-                        "text-red-600 cursor-pointer block",
-                        (if @expanded_error_id == msg.id,
-                          do: "whitespace-pre-wrap break-words",
-                          else: "truncate")
-                      ]}
+                      id={"error-#{msg.id}"}
+                      class="error-span text-red-600 cursor-pointer block truncate"
+                      phx-click.stop={
+                        JS.toggle_class("truncate", to: "#error-#{msg.id}")
+                        |> JS.toggle_class("whitespace-pre-wrap", to: "#error-#{msg.id}")
+                        |> JS.toggle_class("break-words", to: "#error-#{msg.id}")
+                      }
                     >
                       <%= msg.last_error %>
                     </span>
