@@ -33,16 +33,31 @@ defmodule Gonemail.Email.Workers.EmailWorker do
               "Delivering message #{message.id} to=#{message.to_email} app=#{message.app_id} template=#{message.template_id}"
             )
 
-            result =
+            start = System.monotonic_time()
+
+            {result, outcome} =
               case deliver(message) do
                 {:ok, _} ->
                   Logger.info("Delivered message #{message.id}")
-                  :ok
+                  {:ok, :delivered}
 
                 {:error, reason} ->
                   Logger.warning("Failed to deliver message #{message.id}: #{inspect(reason)}")
-                  {:error, reason}
+                  next_attempts = message.attempts + 1
+
+                  outcome =
+                    if next_attempts >= 3, do: :failed, else: :retrying
+
+                  {{:error, reason}, outcome}
               end
+
+            duration = System.monotonic_time() - start
+
+            :telemetry.execute(
+              [:gonemail, :email, :attempt],
+              %{duration: duration},
+              %{app: message.app_id, status: outcome}
+            )
 
             MessageService.mark_attempt(message, result)
             :processed

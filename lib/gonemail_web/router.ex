@@ -2,6 +2,8 @@ defmodule GonemailWeb.Router do
   use GonemailWeb, :router
   import Phoenix.LiveView.Router
 
+  alias PromEx.Plug, as: PromExPlug
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -17,6 +19,10 @@ defmodule GonemailWeb.Router do
 
   scope "/", GonemailWeb do
     get "/health", HealthController, :check
+  end
+
+  scope "/metrics", log: false do
+    forward "/", PromExPlug, prom_ex_module: Gonemail.PromEx
   end
 
   scope "/admin", GonemailWeb do

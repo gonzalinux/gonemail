@@ -13,6 +13,7 @@ defmodule Gonemail.Application do
     end
 
     children = [
+      Gonemail.PromEx,
       GonemailWeb.Telemetry,
       Gonemail.Repo,
       {DNSCluster, query: Application.get_env(:gonemail, :dns_cluster_query) || :ignore},
