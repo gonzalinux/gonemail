@@ -11,11 +11,12 @@ defmodule GonemailWeb.EmailController do
     to = parse_contact(params["to"])
     from = parse_contact(params["from"])
     assigns = Map.merge(%{"body" => params}, params["data"] || %{})
+    attachments = params["attachments"] || []
 
     Logger.info("Enqueueing send request for app=#{params["app"]} template=#{params["template"]}")
 
     with {:ok, message} <-
-           Email.enqueue_email(to, params["app"], params["template"], from, assigns) do
+           Email.enqueue_email(to, params["app"], params["template"], from, assigns, attachments) do
       conn |> put_status(:accepted) |> json(%{id: message.id, status: message.status})
     end
   end

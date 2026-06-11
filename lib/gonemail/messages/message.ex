@@ -29,6 +29,7 @@ defmodule Gonemail.Messages.Message do
     field :subject, :string
     field :html_body, :string
     field :data, :map
+    field :attachments, {:array, :map}, default: []
     field :status, Ecto.Enum, values: [:queued, :retrying, :delivered, :failed]
     field :attempts, :integer, default: 0
     field :last_error, :string
@@ -49,7 +50,16 @@ defmodule Gonemail.Messages.Message do
   end
 
   @required [:app_id, :to_email, :from_email, :subject, :html_body, :status]
-  @optional [:to_name, :from_name, :data, :template_id, :last_error, :sent_at, :next_attempt_at]
+  @optional [
+    :to_name,
+    :from_name,
+    :data,
+    :attachments,
+    :template_id,
+    :last_error,
+    :sent_at,
+    :next_attempt_at
+  ]
 
   def changeset(message, attrs) do
     message

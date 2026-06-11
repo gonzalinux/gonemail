@@ -63,11 +63,18 @@ defmodule Gonemail.Email.Workers.EmailWorker do
          from_email: from_email,
          from_name: from_name,
          subject: subject,
-         html_body: html_body
+         html_body: html_body,
+         attachments: attachments
        }) do
     to = if to_name, do: {to_name, to_email}, else: to_email
 
-    Email.build(to, subject, html_body, %{from_email: from_email, from_name: from_name})
+    Email.build(
+      to,
+      subject,
+      html_body,
+      %{from_email: from_email, from_name: from_name},
+      attachments
+    )
     |> Mailer.deliver()
   end
 end

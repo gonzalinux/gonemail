@@ -7,7 +7,7 @@ defmodule Gonemail.Email do
   alias Gonemail.Templates.{TemplateService, Renderer}
   alias Gonemail.Messages.MessageService
 
-  def enqueue_email(to, app_id, template_id, from \\ nil, assigns \\ %{}) do
+  def enqueue_email(to, app_id, template_id, from \\ nil, assigns \\ %{}, attachments \\ []) do
     with {:ok, app} <- AppService.get_verified_app(app_id),
          {:ok, template} <- TemplateService.get_template(template_id, app.default_template_id),
          {from_email, from_name} = parse_sender(from, template, app),
@@ -24,6 +24,7 @@ defmodule Gonemail.Email do
         from_name: from_name,
         subject: subject,
         html_body: html_body,
+        attachments: attachments,
         status: :queued
       })
     else
@@ -71,20 +72,31 @@ defmodule Gonemail.Email do
   ## Returns
     - A Swoosh.Email struct ready to be delivered
   """
-  def build(
-        to,
-        subject,
-        html,
-        %{from_email: from_email, from_name: from_name}
-      ) do
+  def build(to, subject, html, %{from_email: from_email, from_name: from_name}, attachments \\ []) do
     text = extract_text_from_html(html)
 
-    new()
-    |> to(to)
-    |> from({from_name, from_email})
-    |> subject(subject)
-    |> html_body(html)
-    |> text_body(text)
+    email =
+      new()
+      |> to(to)
+      |> from({from_name, from_email})
+      |> subject(subject)
+      |> html_body(html)
+      |> text_body(text)
+
+    Enum.reduce(attachments, email, fn att, acc ->
+      attachment(acc, build_attachment(att))
+    end)
+  end
+
+  defp build_attachment(%{"filename" => filename, "content" => content} = att) do
+    content_type = Map.get(att, "content_type", "application/octet-stream")
+    data = Base.decode64!(content)
+
+    Swoosh.Attachment.new({:data, data},
+      filename: filename,
+      content_type: content_type,
+      type: :attachment
+    )
   end
 
   # Simple text extraction from HTML (removes tags)
